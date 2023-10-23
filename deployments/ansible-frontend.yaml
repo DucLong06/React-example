@@ -1,0 +1,50 @@
+- hosts: localhost
+  tasks:
+    - name: CyberEye Frontend Deployment
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ce-api-frontend
+            namespace: testing
+            labels:
+              app: ce-api-frontend
+          spec:
+            replicas: 3
+            selector:
+              matchLabels:
+                app: ce-api-frontend
+            template:
+              metadata:
+                labels:
+                  app: ce-api-frontend
+              spec:
+                containers:
+                  - name: ce-api-frontend
+                    image: "{{ image }}"
+                    ports:
+                      - containerPort: 80
+
+    - name: Service for frontend
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: frontend-service
+            namespace: testing
+            labels:
+              app: ce-fe-svc
+              service: frontend
+          spec:
+            type: ClusterIP
+            selector:
+              app: ce-api-frontend
+            ports:
+              - protocol: TCP
+                targetPort: 80
+                name: frontend-svc
+                port: 80
